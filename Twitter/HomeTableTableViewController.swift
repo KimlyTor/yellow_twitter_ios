@@ -16,22 +16,28 @@ class HomeTableTableViewController: UITableViewController {
     let myRefreshControl = UIRefreshControl()
 
     override func viewDidLoad() {
+        numberOfTweet = 20
         super.viewDidLoad()
-        loadTweets()
         myRefreshControl.addTarget(self, action: #selector(loadTweets), for: .valueChanged)
         tableView.refreshControl = myRefreshControl            //refresh home screen when pull down
         
+        self.tableView.rowHeight = UITableView.automaticDimension
+        self.tableView.estimatedRowHeight = 150
         
+        
+        
+    }
     
+    override func viewDidAppear(_ animated: Bool) {           // tweet post update immediately wihout refresh
+        super.viewDidAppear(animated)
+        loadTweets()
     }
     
     @objc func loadTweets(){
-        
-        numberOfTweet = 20
         let myUrl = "https://api.twitter.com/1.1/statuses/home_timeline.json"
         let myParams = ["count": numberOfTweet]
 
-        TwitterAPICaller.client?.getDictionariesRequest(url: myUrl, parameters: myParams, success:{( tweets:[NSDictionary]) in
+        TwitterAPICaller.client?.getDictionariesRequest(url: myUrl, parameters: myParams as [String : Any], success:{( tweets:[NSDictionary]) in
             
             self.tweetArray.removeAll()
             for tweet in tweets{                                 //for every tweet getting from the api tweets dictionary
@@ -53,7 +59,7 @@ class HomeTableTableViewController: UITableViewController {
         numberOfTweet = numberOfTweet + 20
         let myParams = ["count": numberOfTweet]
         
-        TwitterAPICaller.client?.getDictionariesRequest(url: myUrl, parameters: myParams, success:{( tweets:[NSDictionary]) in
+        TwitterAPICaller.client?.getDictionariesRequest(url: myUrl, parameters: myParams as [String : Any], success:{( tweets:[NSDictionary]) in
             
             self.tweetArray.removeAll()
             for tweet in tweets{                                 //for every tweet getting from the api tweets dictionary
@@ -96,6 +102,9 @@ class HomeTableTableViewController: UITableViewController {
         if let imageData = data{
             cell.profileImageView.image = UIImage(data: imageData)
         }
+        
+        cell.setFavorite(tweetArray[indexPath.row]["favorited"] as! Bool)
+        cell.tweetId = tweetArray[indexPath.row]["id"]  as! Int
         
         return cell
     }
